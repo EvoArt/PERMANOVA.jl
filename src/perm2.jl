@@ -36,44 +36,19 @@ function QRfit(x,y)
     fitted =   x * β#sum(x .* β, dims = 2)
     residuals = y .-fitted
     return sum(Diagonal(fitted) ), sum(Diagonal(residuals) ),Q,R
-end
+end#
 
-function QRfit(Q,R,x,y)
-    β = (R^(-1)*Q' *y)
-    fitted =   x * β#sum(x .* β, dims = 2)
-    residuals = y .-fitted
-    return sum(Diagonal(fitted) )/ sum(Diagonal(residuals))
-end
-
-function Resfit(Q,R,x,y)
-    β = (R^(-1)*Q' *y)
-    fitted =   x * β#sum(x .* β, dims = 2)
-    residuals = y .-fitted
-    return sum(Diagonal(fitted) ),sum(Diagonal(residuals))
-end
-function Fitfit(Q,R,x,y)
-    β = (R^(-1)*Q' *y)
-    fitted =   x * β#sum(x .* β, dims = 2)
-    return sum(Diagonal(fitted) )
-end
-function Fitfit(Q,R,x,y,n ::Int64)
-    β = (R^(-1)*Q' *y)
-    fitted =   x * β#sum(x .* β, dims = 2)
-    return sumdiag(fitted,n)
-end
-function Resfit(Q,R,x,y,c,n)
+function get_fitted_residuals(Q,R,x,y,c,n)
     β = (R^(-1)*Q' *y)
     A_mul_B!(c, x, β)#sum(x .* β, dims = 2)
 
     return sumdiag(c,y,n)#sum(Diagonal(c) ),sum(Diagonal(resids))
 end
-function Fitfit(Q,R,x,y,c,n ::Int64)
+function get_fitted(Q,R,x,y,c,n ::Int64)
     β = (R^(-1)*Q' *y)
     A_mul_B!(c, x, β)#sum(x .* β, dims = 2)
     return sumdiag(c,n)#sum(Diagonal(c) )
 end
-
-
 
 function term_fit(x,y)
     Q, R = LinearAlgebra.qr(x)
@@ -153,10 +128,10 @@ function permute(G ::Hermitian, n ::Int64, n_terms ::Int64, mod_mats ::Vector{Ma
        @inbounds for i in 1:n_terms
         if i == n_terms
             prevsum = sum(fit)
-        fit[i], Gres = Resfit(Qs[i],Rs[i],mod_mats[i],g,C[i],n)
+        fit[i], Gres = get_fitted_residuals(Qs[i],Rs[i],mod_mats[i],g,C[i],n)
         fit[i] -=prevsum
         else
-        fit[i] = Fitfit(Qs[i],Rs[i],mod_mats[i],g,C[i],n) - sum(fit)
+        fit[i] = get_fitted(Qs[i],Rs[i],mod_mats[i],g,C[i],n) - sum(fit)
         end
     end
     f_terms .= (fit) ./(Gres)
