@@ -18,6 +18,7 @@ Distances = "0.10"
 LoopVectorization = "0.12"
 StatsModels = "0.6"
 TexTables = "0.2"
+NamedArrays = "0.9"
 julia = "1.1"
 
 [extras]
