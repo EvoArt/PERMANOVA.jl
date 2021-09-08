@@ -1,10 +1,11 @@
 module PERMANOVA
 
-using Random, LinearAlgebra, Distances,  StatsModels,Statistics,TexTables,LoopVectorization
+using Random, LinearAlgebra, Distances, StatsModels,Statistics,TexTables,LoopVectorization, NamedArrays
 include("perm2.jl")
 include("output.jl")
 
 export permanova, 
+    hydra,
     permute, 
     Euclidean,
     SqEuclidean,

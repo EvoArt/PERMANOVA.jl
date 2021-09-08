@@ -1,3 +1,11 @@
+struct PSummary
+    results
+    table
+end
+
+function Base.display(x::PSummary) 
+     println("");println(x.table)
+end
 
 
 function A_mul_B!(C, A, B)
@@ -16,15 +24,16 @@ function sumdiag(x,n)
     end
     return s
     end
-    function sumdiag(x,y,n)
-        s = 0
-        r = 0
-        @turbo for i in 1:n
+function sumdiag(x,y,n)
+    s = 0
+    r = 0
+    @turbo for i in 1:n
         s += x[i,i]
         r += y[i,i] - x[i,i]
-        end
-        return s,r
-        end
+    end
+    return s,r
+end
+
 function dblcen(D)
     A = D .- mean(D,dims = 1)
     return A .- mean(A,dims = 2) 
@@ -33,21 +42,21 @@ end
 function QRfit(x,y)
     Q, R = LinearAlgebra.qr(x)
     β = (R^(-1)*Q' *y)
-    fitted =   x * β#sum(x .* β, dims = 2)
+    fitted =   x * β
     residuals = y .-fitted
     return sum(Diagonal(fitted) ), sum(Diagonal(residuals) ),Q,R
 end#
 
 function get_fitted_residuals(Q,R,x,y,c,n)
     β = (R^(-1)*Q' *y)
-    A_mul_B!(c, x, β)#sum(x .* β, dims = 2)
+    A_mul_B!(c, x, β)
 
-    return sumdiag(c,y,n)#sum(Diagonal(c) ),sum(Diagonal(resids))
+    return sumdiag(c,y,n)
 end
 function get_fitted(Q,R,x,y,c,n ::Int64)
     β = (R^(-1)*Q' *y)
-    A_mul_B!(c, x, β)#sum(x .* β, dims = 2)
-    return sumdiag(c,n)#sum(Diagonal(c) )
+    A_mul_B!(c, x, β)
+    return sumdiag(c,n)
 end
 
 function term_fit(x,y)
@@ -101,7 +110,8 @@ function permanova(data,D, formula = @formula(1~1), n_perm ::Int64 = 999; pairs 
     p = permute(G, n, n_terms, mod_mats,Qs,Rs,n_perm)  
 
     regtab = get_output(terms,Df,sumsq,r2,f_terms,residual,Tot,p,n) 
-    return regtab
+    return PSummary(regtab[1],regtab[2])
+    
 
 end
 
@@ -111,7 +121,7 @@ function permanova(data,M,metric ::DataType, formula = @formula(1~1), n_perm ::I
 return  permanova(data,D, formula,n_perm ; pairs = pairs)
 end
 
-
+hydra = permanova
 function permute(G ::Hermitian, n ::Int64, n_terms ::Int64, mod_mats ::Vector{Matrix},Qs ::Vector{Matrix},Rs ::Vector{Matrix},n_perm ::Int64)  
     C = [Array{Float64}(undef,size(mod_mats[i])[1],size(G)[2]) for i in 1:n_terms]
     
