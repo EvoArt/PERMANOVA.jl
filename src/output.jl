@@ -26,8 +26,6 @@ setcoef!(sumsq, "Residual"=>Gres)
 setcoef!(R2, "Total"=>1)
 setcoef!(DF, "Total"=>n-1)
 setcoef!(sumsq, "Total"=>Tot)
-print(vcat(coefs...,"Residual","Total"))
-
 return NamedArray(coefArray,(vcat(coefs...,"Residual","Total"),["Df","SumOfSqs","R2","F","P"])), hcat(DF,sumsq,R2,F,P)
 end
 
