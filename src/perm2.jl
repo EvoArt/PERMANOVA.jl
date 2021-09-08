@@ -41,11 +41,12 @@ end
 
 function QRfit(x,y)
     Q, R = LinearAlgebra.qr(x)
-    β = (R^(-1)*Q' *y)
+    R_inv_Q_trans = R^(-1)*Q'
+    β = R^(-1)*Q' *y
     fitted =   x * β
     residuals = y .-fitted
-    return sum(Diagonal(fitted) ), sum(Diagonal(residuals) ),Q,R
-end#
+    return sum(Diagonal(fitted) ), sum(Diagonal(residuals) ),R_inv_Q_trans
+end
 
 function get_fitted_residuals(Q,R,x,y,c,n)
     β = (R^(-1)*Q' *y)
@@ -59,11 +60,24 @@ function get_fitted(Q,R,x,y,c,n ::Int64)
     return sumdiag(c,n)
 end
 
+function get_fitted_residuals(R_inv_Q_trans,x,y,c,n)
+    β = R_inv_Q_trans*y
+    A_mul_B!(c, x, β)
+
+    return sumdiag(c,y,n)
+end
+function get_fitted(R_inv_Q_trans,x,y,c,n ::Int64)
+    β = R_inv_Q_trans *y
+    A_mul_B!(c, x, β)
+    return sumdiag(c,n)
+end
+
 function term_fit(x,y)
     Q, R = LinearAlgebra.qr(x)
-    β = (R^(-1)*Q' *y)
+    R_inv_Q_trans = R^(-1)*Q' 
+    β = R_inv_Q_trans*y
     fitted =   x * β
-    return sum(Diagonal(fitted)), Q, R
+    return sum(Diagonal(fitted)), R_inv_Q_trans
 end
 
 function unpack_formula(form)
@@ -84,8 +98,7 @@ function permanova(data,D, formula = @formula(1~1), n_perm ::Int64 = 999; pairs 
     formulae,terms = unpack_formula(formula) #list of model formulae for analysis and names for coef table
     n_terms = length(terms) 
     mod_mats = Vector{Matrix}(undef,n_terms)
-    Qs = Vector{Matrix}(undef,n_terms)
-    Rs = Vector{Matrix}(undef,n_terms)
+    R_inv_Q_trans = Vector{Matrix}(undef,n_terms)
     Df = zeros(Int64,n_terms)
     sumsq = zeros(Float64,n_terms)
     term_matrix = ones(Int64,n,1) # just the intercept (not run, but added to later matrices)
@@ -96,10 +109,10 @@ function permanova(data,D, formula = @formula(1~1), n_perm ::Int64 = 999; pairs 
         mod_mats[i] =term_matrix # store model matrices for permutation
         Df[i] = size(term_matrix)[2] -mat_size
         if i == n_terms # if full model
-            fitted, residual,Qs[i], Rs[i] = QRfit(term_matrix,G)
+            fitted, residual,R_inv_Q_trans[i] = QRfit(term_matrix,G)
             sumsq[i] =fitted-sum(sumsq)
         else
-        tmp,Qs[i], Rs[i] = term_fit(term_matrix,G)
+        tmp,R_inv_Q_trans[i] = term_fit(term_matrix,G)
         sumsq[i] =tmp-sum(sumsq)
         end
     end
@@ -107,7 +120,7 @@ function permanova(data,D, formula = @formula(1~1), n_perm ::Int64 = 999; pairs 
     Resid_Df = n - 1- sum(Df)
     f_terms = (sumsq ./Df) ./(residual /Resid_Df)
     r2 = sumsq ./Tot
-    p = permute(G, n, n_terms, mod_mats,Qs,Rs,n_perm)  
+    p = permute(G, n, n_terms, mod_mats,R_inv_Q_trans,n_perm)  
 
     regtab = get_output(terms,Df,sumsq,r2,f_terms,residual,Tot,p,n) 
     return PSummary(regtab[1],regtab[2])
@@ -122,7 +135,7 @@ return  permanova(data,D, formula,n_perm ; pairs = pairs)
 end
 
 hydra = permanova
-function permute(G ::Hermitian, n ::Int64, n_terms ::Int64, mod_mats ::Vector{Matrix},Qs ::Vector{Matrix},Rs ::Vector{Matrix},n_perm ::Int64)  
+function permute(G ::Hermitian, n ::Int64, n_terms ::Int64, mod_mats ::Vector{Matrix},R_inv_Q_trans::Vector{Matrix},n_perm ::Int64)  
     C = [Array{Float64}(undef,size(mod_mats[i])[1],size(G)[2]) for i in 1:n_terms]
     
     inds = collect(1:n)
@@ -138,10 +151,10 @@ function permute(G ::Hermitian, n ::Int64, n_terms ::Int64, mod_mats ::Vector{Ma
        @inbounds for i in 1:n_terms
         if i == n_terms
             prevsum = sum(fit)
-        fit[i], Gres = get_fitted_residuals(Qs[i],Rs[i],mod_mats[i],g,C[i],n)
+        fit[i], Gres = get_fitted_residuals(R_inv_Q_trans[i],mod_mats[i],g,C[i],n)
         fit[i] -=prevsum
         else
-        fit[i] = get_fitted(Qs[i],Rs[i],mod_mats[i],g,C[i],n) - sum(fit)
+        fit[i] = get_fitted(R_inv_Q_trans[i],mod_mats[i],g,C[i],n) - sum(fit)
         end
     end
     f_terms .= (fit) ./(Gres)
