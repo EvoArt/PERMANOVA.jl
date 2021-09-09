@@ -1,5 +1,4 @@
-
-function get_output(coefs,Df,sq,r2,f_terms,Gres,Tot,p,n)
+function get_output(coefs::Tuple,Df::Vector{Int64},sq::Vector{Float64},r2::Vector{Float64},f_terms::Vector{Float64},Gres::Float64,Tot::Float64,p::Matrix{Float64},n::Int64)
 n_term = length(coefs)
 DF = RegCol("Df")
 R2 = RegCol("R²")

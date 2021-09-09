@@ -8,7 +8,7 @@ function Base.display(x::PSummary)
 end
 
 
-function A_mul_B!(C, A, B)
+function A_mul_B!(C::Array{Float64}, A::Array{Float64}, B::Array{Float64})
     @turbo for n ∈ indices((C,B), 2), m ∈ indices((C,A), 1)
         Cmn = zero(eltype(C))
         for k ∈ indices((A,B), (2,1))
@@ -17,14 +17,14 @@ function A_mul_B!(C, A, B)
         C[m,n] = Cmn
     end
 end
-function sumdiag(x,n)
+function sumdiag(x::Array{Float64},n::Int64)
     s = 0
     @turbo for i in 1:n
     s += x[i,i]
     end
     return s
     end
-function sumdiag(x,y,n)
+function sumdiag(x::Array{Float64},y::Array{Float64},n::Int64)
     s = 0
     r = 0
     @turbo for i in 1:n
@@ -48,25 +48,13 @@ function QRfit(x,y)
     return sum(Diagonal(fitted) ), sum(Diagonal(residuals) ),R_inv_Q_trans
 end
 
-function get_fitted_residuals(Q,R,x,y,c,n)
-    β = (R^(-1)*Q' *y)
-    A_mul_B!(c, x, β)
-
-    return sumdiag(c,y,n)
-end
-function get_fitted(Q,R,x,y,c,n ::Int64)
-    β = (R^(-1)*Q' *y)
-    A_mul_B!(c, x, β)
-    return sumdiag(c,n)
-end
-
-function get_fitted_residuals(R_inv_Q_trans,x,y,c,n)
+function get_fitted_residuals(R_inv_Q_trans::Array{Float64},x::Array{Float64},y::Array{Float64},c::Array{Float64},n ::Int64)
     β = R_inv_Q_trans*y
     A_mul_B!(c, x, β)
 
     return sumdiag(c,y,n)
 end
-function get_fitted(R_inv_Q_trans,x,y,c,n ::Int64)
+function get_fitted(R_inv_Q_trans::Array{Float64},x::Array{Float64},y::Array{Float64},c::Array{Float64},n ::Int64)
     β = R_inv_Q_trans *y
     A_mul_B!(c, x, β)
     return sumdiag(c,n)
@@ -90,7 +78,7 @@ function unpack_formula(form)
     end
 end
 
-function permanova(data,D, formula = @formula(1~1), n_perm ::Int64 = 999; pairs = false)
+function permanova(data::DataFrame ,D ::Array{Float64}, formula::FormulaTerm = @formula(1~1), n_perm ::Int64 = 999)
     
     n = size(D)[1]
     G = Hermitian(-0.5 * dblcen(D .^2))
@@ -120,7 +108,12 @@ function permanova(data,D, formula = @formula(1~1), n_perm ::Int64 = 999; pairs 
     Resid_Df = n - 1- sum(Df)
     f_terms = (sumsq ./Df) ./(residual /Resid_Df)
     r2 = sumsq ./Tot
-    p = permute(G, n, n_terms, mod_mats,R_inv_Q_trans,n_perm)  
+    C = Vector{Array{Float64}}(undef,n_terms)
+    for i in 1:n_terms
+        C[i] = Array{Float64}(undef,size(mod_mats[i])[1],size(G)[2])
+    end
+
+    p = permute(G, n, n_terms, mod_mats,R_inv_Q_trans,n_perm,C)  
 
     regtab = get_output(terms,Df,sumsq,r2,f_terms,residual,Tot,p,n) 
     return PSummary(regtab[1],regtab[2])
@@ -129,15 +122,15 @@ function permanova(data,D, formula = @formula(1~1), n_perm ::Int64 = 999; pairs 
 end
 
 
-function permanova(data,M,metric ::DataType, formula = @formula(1~1), n_perm ::Int64 = 999; pairs = false)
+function permanova(data::DataFrame,M::Array{Float64},metric ::DataType, formula::FormulaTerm = @formula(1~1), n_perm ::Int64 = 999)
     D = pairwise(metric(),M',M')
-return  permanova(data,D, formula,n_perm ; pairs = pairs)
+return  permanova(data,D, formula,n_perm )
 end
 
 hydra = permanova
-function permute(G ::Hermitian, n ::Int64, n_terms ::Int64, mod_mats ::Vector{Matrix},R_inv_Q_trans::Vector{Matrix},n_perm ::Int64)  
-    C = [Array{Float64}(undef,size(mod_mats[i])[1],size(G)[2]) for i in 1:n_terms]
-    
+function permute(G ::Hermitian, n ::Int64, n_terms ::Int64, mod_mats ::Vector{Matrix},R_inv_Q_trans::Vector{Matrix},n_perm ::Int64, C::Vector)  
+   
+
     inds = collect(1:n)
     perms = Array{Float64}(undef,n_terms,n_perm+1)
     fit = zeros(n_terms)
@@ -165,4 +158,3 @@ end
 p = sum( perms[:,1] .<perms[:,2:end],dims = 2) ./n_perm
 return p
 end
-
