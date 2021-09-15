@@ -171,8 +171,6 @@ function permute(G ::Hermitian, n ::Int64, n_terms ::Int64, mod_mats ::Vector{Ma
     @inbounds for j in 1:n_perm +1
         permutecols!!(g, inds), setup=(copyto!(indscopy, inds))
         permuterows!!(g, inds), setup=(copyto!(indscopy, inds))
-        #g .=view(G,inds,inds)
-      # Gres = Resfit(Qs[end],Rs[end],mod_mats[end],g)
        fit .= zeros(n_terms)
        @inbounds for i in 1:n_terms
         if i == n_terms
