@@ -7,6 +7,38 @@ function Base.display(x::PSummary)
      println("");println(x.table)
 end
 
+# swap columns i and j of a, in-place
+function swaprows!(a::AbstractMatrix, i, j)
+    i == j && return
+    rows = axes(a,1)
+    @boundscheck i in rows || throw(BoundsError(a, (i,:)))
+    @boundscheck j in rows || throw(BoundsError(a, (j,:)))
+    for k in axes(a,1)
+        @inbounds a[i,k],a[j,k] = a[j,k],a[i,k]
+    end
+end
+# like permute!! applied to each row of a, in-place in a (overwriting p).
+function permuterows!!(a::AbstractMatrix, p::AbstractVector{<:Integer})
+    #require_one_based_indexing(a, p)
+    count = 0
+    start = 0
+    while count < length(p)
+        ptr = start = findnext(!iszero, p, start+1)::Int
+        next = p[start]
+        count += 1
+        while next != start
+            swaprows!(a, ptr, next)
+            p[ptr] = 0
+            ptr = next
+            next = p[next]
+            count += 1
+        end
+        p[ptr] = 0
+    end
+    a
+end
+
+
 
 function A_mul_B!(C::Array{Float64}, A::Array{Float64}, B::Array{Float64})
     @turbo for n ∈ indices((C,B), 2), m ∈ indices((C,A), 1)
@@ -121,7 +153,6 @@ function permanova(data::DataFrame ,D ::Array{Float64}, formula::FormulaTerm = @
 
 end
 
-
 function permanova(data::DataFrame,M::Array{Float64},metric ::DataType, formula::FormulaTerm = @formula(1~1), n_perm ::Int64 = 999)
     D = pairwise(metric(),M',M')
 return  permanova(data,D, formula,n_perm )
@@ -130,15 +161,17 @@ end
 hydra = permanova
 function permute(G ::Hermitian, n ::Int64, n_terms ::Int64, mod_mats ::Vector{Matrix},R_inv_Q_trans::Vector{Matrix},n_perm ::Int64, C::Vector)  
    
-
     inds = collect(1:n)
+    indscopy = copy(inds)
     perms = Array{Float64}(undef,n_terms,n_perm+1)
     fit = zeros(n_terms)
     f_terms = zeros(n_terms)
     Gres = 0.0
-    g =Array{Float64}(undef,n,n)
+    g = Array(G)
     @inbounds for j in 1:n_perm +1
-        g .=view(G,inds,inds)
+        permutecols!!(g, inds), setup=(copyto!(indscopy, inds))
+        permuterows!!(g, inds), setup=(copyto!(indscopy, inds))
+        #g .=view(G,inds,inds)
       # Gres = Resfit(Qs[end],Rs[end],mod_mats[end],g)
        fit .= zeros(n_terms)
        @inbounds for i in 1:n_terms
