@@ -18,7 +18,16 @@ The function `permanova`/`hydra2` expects:
 Alternatively, instead of y and metric, pass in a distance matrix D.
 The function retruns a `PSummary` struct containing `table` - a [TexTables.jl](https://jacobadenbaum.github.io/TexTables.jl/stable/) formatted ANOVA table for display purposes and `results` - a NamedArray for easier access to specific results.
 
+## Example
+```julia
+using PERMANOVA, DataFrames,Distances
+x = rand(1:4,100)
+y = rand(100,5)
+
+preds = [[rand(["a","b","c","d"]) for i in 1:100] for j in 1:3]
+df = DataFrame(preds,[:X,:Y,:Z])
+permanova(df,y,BrayCurtis,@formula(1~X+Y), blocks = @formula(block ~ Z))
+```
 
 ## TODO
-*   Strata
 *   Pairwise PERMANOVA
