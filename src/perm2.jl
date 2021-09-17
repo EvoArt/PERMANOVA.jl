@@ -110,7 +110,7 @@ function unpack_formula(form)
     end
 end
 
-function permanova(data::DataFrame ,D ::Array{Float64}, formula::FormulaTerm = @formula(1~1), n_perm ::Int64 = 999)
+function permanova(data::DataFrame ,D ::Array{Float64}, formula::FormulaTerm = @formula(1~1), n_perm ::Int64 = 999;blocks = false)
     
     n = size(D)[1]
     G = Hermitian(-0.5 * dblcen(D .^2))
@@ -144,8 +144,14 @@ function permanova(data::DataFrame ,D ::Array{Float64}, formula::FormulaTerm = @
     for i in 1:n_terms
         C[i] = Array{Float64}(undef,size(mod_mats[i])[1],size(G)[2])
     end
+    if blocks == false
+        p = permute(G, n, n_terms, mod_mats,R_inv_Q_trans,n_perm,C)  
+    else
+        block_mat = StatsModels.modelmatrix(blocks,data)
+        p = permute(G, n, n_terms, mod_mats,R_inv_Q_trans,n_perm,C,block_mat) 
+    end 
 
-    p = permute(G, n, n_terms, mod_mats,R_inv_Q_trans,n_perm,C)  
+
 
     regtab = get_output(terms,Df,sumsq,r2,f_terms,residual,Tot,p,n) 
     return PSummary(regtab[1],regtab[2])
@@ -153,9 +159,9 @@ function permanova(data::DataFrame ,D ::Array{Float64}, formula::FormulaTerm = @
 
 end
 
-function permanova(data::DataFrame,M::Array{Float64},metric ::DataType, formula::FormulaTerm = @formula(1~1), n_perm ::Int64 = 999)
+function permanova(data::DataFrame,M::Array{Float64},metric ::DataType, formula::FormulaTerm = @formula(1~1), n_perm ::Int64 = 999;blocks = false)
     D = pairwise(metric(),M',M')
-return  permanova(data,D, formula,n_perm )
+return  permanova(data,D, formula,n_perm , blocks = blocks)
 end
 
 hydra = permanova
@@ -184,6 +190,39 @@ function permute(G ::Hermitian, n ::Int64, n_terms ::Int64, mod_mats ::Vector{Ma
     f_terms .= (fit) ./(Gres)
     perms[:,j] .= f_terms
     shuffle!(inds)
+end
+p = sum( perms[:,1] .<perms[:,2:end],dims = 2) ./n_perm
+return p
+end
+
+function permute(G ::Hermitian, n ::Int64, n_terms ::Int64, mod_mats ::Vector{Matrix},R_inv_Q_trans::Vector{Matrix},n_perm ::Int64, C::Vector,block_mat)  
+    blockviews = []
+    inds = collect(1:n)
+    for col in eachcol(block_mat)
+        push!(blockviews,view(inds,Bool.(collect(col))))
+    end
+    indscopy = copy(inds)
+    perms = Array{Float64}(undef,n_terms,n_perm+1)
+    fit = zeros(n_terms)
+    f_terms = zeros(n_terms)
+    Gres = 0.0
+    g = Array(G)
+    @inbounds for j in 1:n_perm +1
+        permutecols!!(g, inds), setup=(copyto!(indscopy, inds))
+        permuterows!!(g, inds), setup=(copyto!(indscopy, inds))
+       fit .= zeros(n_terms)
+       @inbounds for i in 1:n_terms
+        if i == n_terms
+            prevsum = sum(fit)
+        fit[i], Gres = get_fitted_residuals(R_inv_Q_trans[i],mod_mats[i],g,C[i],n)
+        fit[i] -=prevsum
+        else
+        fit[i] = get_fitted(R_inv_Q_trans[i],mod_mats[i],g,C[i],n) - sum(fit)
+        end
+    end
+    f_terms .= (fit) ./(Gres)
+    perms[:,j] .= f_terms
+    shuffle!.(blockviews)
     
 end
 p = sum( perms[:,1] .<perms[:,2:end],dims = 2) ./n_perm
