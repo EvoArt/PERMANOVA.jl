@@ -1,12 +1,9 @@
 module PERMANOVA
 
-using Random, LinearAlgebra, Distances, StatsModels,Statistics,TexTables,LoopVectorization, NamedArrays,DataFrames
+using Random, LinearAlgebra, Distances, StatsModels,Statistics,TexTables,LoopVectorization, NamedArrays
 include("perm2.jl")
 include("output.jl")
-if Base.VERSION >= v"1.4.2"
-    include("precompile.jl")
-    _precompile_()
-end
+
 export permanova, 
     hydra,
     permute, 
