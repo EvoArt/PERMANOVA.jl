@@ -10,13 +10,11 @@ preds = [["a","b","c","d"][i] for i in x]
 preds2 = [rand(["a","b","c","d"]) for i in x]
 preds3 = [rand(["a","b","c","d"]) for i in x]
 df = DataFrame([preds,preds2,preds3],[:X,:Z,:W])
-Hyde = hydra(df,y,BrayCurtis,@formula(1~X+Z+W),100)
-R"adonis2($y ~X+Z+W,$df,1000)"
+Hyde = hydra(df,y,BrayCurtis,@formula(1~X+Z+W),1000)
+R"ad =adonis2($y ~X+Z+W,$df,1000)"
+n_terms = 3
 
-J = @benchmark permanova($df,$y,BrayCurtis,@formula(1~X+Z+W),999)
-R = @benchmark R"adonis2($y ~X+Z+W,$df,999)"
-@test mean(J.times) < mean(R.times)
-
-J = @benchmark permanova($df,$y,BrayCurtis,@formula(1~X+Z+W),9999)
-R = @benchmark R"adonis2($y ~X+Z+W,$df,9999)"
-@test mean(J.times) < mean(R.times)
+@test sum(R"ad$Df" .== Hyde.results[:,"Df"]) == n_terms +2
+@test sum(R"ad$SumOfSqs".≈ Hyde.results[:,"SumOfSqs"]) == n_terms +2
+@test sum(R"ad$R2".≈ Hyde.results[:,"R2"]) == n_terms +2
+@test sum(R"ad$F".≈ Hyde.results[:,"F"]) == n_terms
