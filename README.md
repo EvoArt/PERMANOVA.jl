@@ -26,8 +26,12 @@ y = rand(100,5)
 
 preds = [[rand(["a","b","c","d"]) for i in 1:100] for j in 1:3]
 df = DataFrame(preds,[:X,:Y,:Z])
-permanova(df,y,BrayCurtis,@formula(1~X+Y), blocks = @formula(block ~ Z))
+permanova(df,y,BrayCurtis,@formula(1~X+Y))
 ```
 
 ## TODO
 *   Pairwise PERMANOVA
+
+## Experimental
+*   `blocks` (strata) e.g. `permanova(df,y,BrayCurtis,@formula(1~X+Y), blocks = @formula(block ~ Z))`
+    
