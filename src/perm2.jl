@@ -7,38 +7,6 @@ function Base.display(x::PSummary)
      println("");println(x.table)
 end
 
-# swap columns i and j of a, in-place
-function swaprows!(a::AbstractMatrix, i, j)
-    i == j && return
-    rows = axes(a,1)
-    @boundscheck i in rows || throw(BoundsError(a, (i,:)))
-    @boundscheck j in rows || throw(BoundsError(a, (j,:)))
-    for k in axes(a,1)
-        @inbounds a[i,k],a[j,k] = a[j,k],a[i,k]
-    end
-end
-# like permute!! applied to each row of a, in-place in a (overwriting p).
-function permuterows!!(a::AbstractMatrix, p::AbstractVector{<:Integer})
-    count = 0
-    start = 0
-    while count < length(p)
-        ptr = start = findnext(!iszero, p, start+1)::Int
-        next = p[start]
-        count += 1
-        while next != start
-            swaprows!(a, ptr, next)
-            p[ptr] = 0
-            ptr = next
-            next = p[next]
-            count += 1
-        end
-        p[ptr] = 0
-    end
-    a
-end
-
-
-
 function A_mul_B!(C, A, B)
     @turbo for n ∈ indices((C,B), 2), m ∈ indices((C,A), 1)
         Cmn = zero(eltype(C))
@@ -164,8 +132,7 @@ return  permanova(data,D, formula,n_perm , blocks = blocks)
 end
 
 hydra = permanova
-function permute(G ::Hermitian, n, n_terms , mod_mats ,R_inv_Q_trans,n_perm , C)  
-   
+function permute(G ::Hermitian, n, n_terms , mod_mats ,R_inv_Q_trans,n_perm , C)    
     inds = collect(1:n)
     indscopy = copy(inds)
     perms = Array{Float64}(undef,n_terms,n_perm+1)
@@ -174,17 +141,16 @@ function permute(G ::Hermitian, n, n_terms , mod_mats ,R_inv_Q_trans,n_perm , C)
     Gres = 0.0
     g = Array(G)
     @inbounds for j in 1:n_perm +1
-        permutecols!!(g, inds), setup=(copyto!(indscopy, inds))
-        permuterows!!(g, inds), setup=(copyto!(indscopy, inds))
+        g .= g[inds,inds]
        fit .= zeros(n_terms)
        @inbounds for i in 1:n_terms
-        if i == n_terms
-            prevsum = sum(fit)
-        fit[i], Gres = get_fitted_residuals(R_inv_Q_trans[i],mod_mats[i],g,C[i],n)
-        fit[i] -=prevsum
-        else
-        fit[i] = get_fitted(R_inv_Q_trans[i],mod_mats[i],g,C[i],n) - sum(fit)
-        end
+            if i == n_terms
+                prevsum = sum(fit)
+                fit[i], Gres = get_fitted_residuals(R_inv_Q_trans[i],mod_mats[i],g,C[i],n)
+                fit[i] -=prevsum
+            else
+                fit[i] = get_fitted(R_inv_Q_trans[i],mod_mats[i],g,C[i],n) - sum(fit)
+            end
     end
     f_terms .= (fit) ./(Gres)
     perms[:,j] .= f_terms
@@ -207,16 +173,15 @@ function permute(G ::Hermitian, n , n_terms , mod_mats ,R_inv_Q_trans,n_perm , C
     Gres = 0.0
     g = Array(G)
     @inbounds for j in 1:n_perm +1
-        permutecols!!(g, inds), setup=(copyto!(indscopy, inds))
-        permuterows!!(g, inds), setup=(copyto!(indscopy, inds))
+        g .= g[inds,inds]
        fit .= zeros(n_terms)
        @inbounds for i in 1:n_terms
         if i == n_terms
             prevsum = sum(fit)
-        fit[i], Gres = get_fitted_residuals(R_inv_Q_trans[i],mod_mats[i],g,C[i],n)
-        fit[i] -=prevsum
+            fit[i], Gres = get_fitted_residuals(R_inv_Q_trans[i],mod_mats[i],g,C[i],n)
+            fit[i] -=prevsum
         else
-        fit[i] = get_fitted(R_inv_Q_trans[i],mod_mats[i],g,C[i],n) - sum(fit)
+            fit[i] = get_fitted(R_inv_Q_trans[i],mod_mats[i],g,C[i],n) - sum(fit)
         end
     end
     f_terms .= (fit) ./(Gres)
