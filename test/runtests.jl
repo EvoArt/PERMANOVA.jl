@@ -14,6 +14,6 @@ Hyde = hydra(df,y,BrayCurtis,@formula(1~X+Z+W),100)
 R"adonis2($y ~X+Z+W,$df,1000)"
 for nperm in 1000:1000:20000
     J = @benchmark permanova(df,y,BrayCurtis,@formula(1~X+Z+W),nperm)
-    R = @benchmark R"adonis2($y ~X+Z+W,$df,nperm)"
+    R = @benchmark R"adonis2($y ~X+Z+W,$df,$nperm)"
     @test mean(J.times) < mean(R.times)
 end
