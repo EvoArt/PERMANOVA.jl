@@ -15,8 +15,8 @@ setcoef!(F, coefs[i]=>f_terms[i])
 setcoef!(P, coefs[i]=>p[i])
 end
 coefArray = hcat(Df,sq,r2,f_terms,p)
-coefArray= vcat(coefArray,[n-1-sum(Df) 1-sum(r2) Gres NaN NaN ])
-coefArray= vcat(coefArray,[n-1 1 Tot NaN NaN ])
+coefArray= vcat(coefArray,[n-1-sum(Df) Gres 1-sum(r2) NaN NaN ])
+coefArray= vcat(coefArray,[n-1 Tot 1 NaN NaN ])
 
 
 setcoef!(R2, "Residual"=>1-sum(r2))
