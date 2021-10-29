@@ -1,4 +1,4 @@
-module PERMANOVA
+module PerManova
 
 using Random, LinearAlgebra, Distances, StatsModels,Statistics,TexTables,LoopVectorization, NamedArrays
 include("perm2.jl")
