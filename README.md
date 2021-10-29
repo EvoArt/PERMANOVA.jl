@@ -1,10 +1,10 @@
-# PERMANOVA
+# PerMANOVA
 
 [![Build Status](https://github.com/EvoArt/Hydra.jl/workflows/CI/badge.svg)](https://github.com/EvoArt/Hydra.jl/actions)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/EvoArt/Hydra.jl?svg=true)](https://ci.appveyor.com/project/EvoArt/Hydra-jl)
 [![Coverage](https://codecov.io/gh/EvoArt/Hydra.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/EvoArt/Hydra.jl)
 
-PERMANOVA implementation based on the work of [McArdle and Anderson](https://esajournals.onlinelibrary.wiley.com/doi/10.1890/0012-9658%282001%29082%5B0290%3AFMMTCD%5D2.0.CO%3B2). This package aims to provide similar functionality to the `adonis2` in the R package [`vegan`](https://cran.r-project.org/web/packages/vegan/index.html). Thus, implementation details are more similar to `adonis2` than to the original work by McArdle and Anderson. P-values are calculated via permuting of data (not residuals) and calculating sequential sums of squares. In keeping with names from mythology, we provide an alias to the `permanova` function :`hydra` the many headed Lernaean Hydra represents the multivariate response data we aim to tackle here. Though perhaps Heracles or Iolis (the eventual slayers of the Hydra) would be more apt.
+PerMANOVA implementation based on the work of [McArdle and Anderson](https://esajournals.onlinelibrary.wiley.com/doi/10.1890/0012-9658%282001%29082%5B0290%3AFMMTCD%5D2.0.CO%3B2). This package aims to provide similar functionality to the `adonis2` in the R package [`vegan`](https://cran.r-project.org/web/packages/vegan/index.html). Thus, implementation details are more similar to `adonis2` than to the original work by McArdle and Anderson. P-values are calculated via permuting of data (not residuals) and calculating sequential sums of squares. In keeping with names from mythology, we provide an alias to the `permanova` function :`hydra` the many headed Lernaean Hydra represents the multivariate response data we aim to tackle here. Though perhaps Heracles or Iolis (the eventual slayers of the Hydra) would be more apt.
 
 <img src="https://github.com/EvoArt/Hydra/blob/master/docs/Sargent_Hercules.jpg" alt="drawing" width="400"/>
 
@@ -20,7 +20,7 @@ The function retruns a `PSummary` struct containing `table` - a [TexTables.jl](h
 
 ## Example
 ```julia
-using PERMANOVA, DataFrames,Distances
+using PerMANOVA, DataFrames,Distances
 x = rand(1:4,100)
 y = rand(100,5)
 
@@ -30,7 +30,7 @@ permanova(df,y,BrayCurtis,@formula(1~X+Y))
 ```
 
 ## TODO
-*   Pairwise PERMANOVA
+*   Pairwise PerMANOVA
 
 ## Experimental
 *   `blocks` (strata) e.g. `permanova(df,y,BrayCurtis,@formula(1~X+Y), blocks = @formula(block ~ Z))`

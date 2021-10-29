@@ -1,16 +1,16 @@
-using PerManova
+using PerMANOVA
 using Documenter
 
-DocMeta.setdocmeta!(PerManova, :DocTestSetup, :(using PerManova); recursive=true)
+DocMeta.setdocmeta!(PerMANOVA, :DocTestSetup, :(using PerMANOVA); recursive=true)
 
 makedocs(;
-    modules=[PerManova],
+    modules=[PerMANOVA],
     authors="Arthur Newbury",
-    repo="https://github.com/EvoArt/PerManova.jl/blob/{commit}{path}#{line}",
-    sitename="PerManova.jl",
+    repo="https://github.com/EvoArt/PerMANOVA.jl/blob/{commit}{path}#{line}",
+    sitename="PerMANOVA.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://EvoArt.github.io/PerManova.jl",
+        canonical="https://EvoArt.github.io/PerMANOVA.jl",
         assets=String[],
     ),
     pages=[
@@ -19,5 +19,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/EvoArt/PerManova.jl",
+    repo="github.com/EvoArt/PerMANOVA.jl",
 )

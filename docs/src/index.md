@@ -1,14 +1,14 @@
 ```@meta
-CurrentModule = PERMANOVA
+CurrentModule = PerMANOVA
 ```
 
-# PERMANOVA
+# PerMANOVA
 
-Documentation for [PERMANOVA](https://github.com/EvoArt/PERMANOVA.jl).
+Documentation for [PerMANOVA](https://github.com/EvoArt/PerMANOVA.jl).
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [PERMANOVA]
+Modules = [PerMANOVA]
 ```
