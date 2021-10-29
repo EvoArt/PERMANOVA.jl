@@ -156,7 +156,7 @@ function permute(G ::Hermitian, n, n_terms , mod_mats ,R_inv_Q_trans,n_perm , C)
     perms[:,j] .= f_terms
     shuffle!(inds)
 end
-p = sum( perms[:,1] .<perms[:,2:end],dims = 2) ./n_perm
+p = sum( perms[:,1] .<=perms[:,1:end],dims = 2) ./(n_perm+1)
 return p
 end
 
@@ -189,6 +189,6 @@ function permute(G ::Hermitian, n , n_terms , mod_mats ,R_inv_Q_trans,n_perm , C
     shuffle!.(blockviews)
     
 end
-p = sum( perms[:,1] .<perms[:,2:end],dims = 2) ./n_perm
+p = sum( perms[:,1] .<=perms[:,1:end],dims = 2) ./(n_perm +1)
 return p
 end
