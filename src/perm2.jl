@@ -33,7 +33,7 @@ function sumdiag(x,y,n)
     return s,r
 end
 
-function dblcen(D)
+function doube_center(D)
     A = D .- mean(D,dims = 1)
     return A .- mean(A,dims = 2) 
 end
@@ -80,7 +80,7 @@ end
 function permanova(data,D, formula = @formula(1~1), n_perm = 999;blocks = false)
     
     n = size(D)[1]
-    G = Hermitian(-0.5 * dblcen(D .^2))
+    G = Hermitian(-0.5 * doube_center(D .^2))
     fitted, residual = 0.0,0.0
     formulae,terms = unpack_formula(formula) #list of model formulae for analysis and names for coef table
     n_terms = length(terms) 
@@ -138,7 +138,7 @@ function permute(G ::Hermitian, n, n_terms , mod_mats ,R_inv_Q_trans,n_perm , C)
     perms = Array{Float64}(undef,n_terms,n_perm+1)
     fit = zeros(n_terms)
     f_terms = zeros(n_terms)
-    Gres = 0.0
+    res = 0.0
     g = Array(G)
     @inbounds for j in 1:n_perm +1
         g .= g[inds,inds]
@@ -146,13 +146,13 @@ function permute(G ::Hermitian, n, n_terms , mod_mats ,R_inv_Q_trans,n_perm , C)
        @inbounds for i in 1:n_terms
             if i == n_terms
                 prevsum = sum(fit)
-                fit[i], Gres = get_fitted_residuals(R_inv_Q_trans[i],mod_mats[i],g,C[i],n)
+                fit[i], res = get_fitted_residuals(R_inv_Q_trans[i],mod_mats[i],g,C[i],n)
                 fit[i] -=prevsum
             else
                 fit[i] = get_fitted(R_inv_Q_trans[i],mod_mats[i],g,C[i],n) - sum(fit)
             end
     end
-    f_terms .= (fit) ./(Gres)
+    f_terms .= (fit) ./(res)
     perms[:,j] .= f_terms
     shuffle!(inds)
 end
@@ -170,7 +170,7 @@ function permute(G ::Hermitian, n , n_terms , mod_mats ,R_inv_Q_trans,n_perm , C
     perms = Array{Float64}(undef,n_terms,n_perm+1)
     fit = zeros(n_terms)
     f_terms = zeros(n_terms)
-    Gres = 0.0
+    res = 0.0
     g = Array(G)
     @inbounds for j in 1:n_perm +1
         g .= g[inds,inds]
@@ -178,13 +178,13 @@ function permute(G ::Hermitian, n , n_terms , mod_mats ,R_inv_Q_trans,n_perm , C
        @inbounds for i in 1:n_terms
         if i == n_terms
             prevsum = sum(fit)
-            fit[i], Gres = get_fitted_residuals(R_inv_Q_trans[i],mod_mats[i],g,C[i],n)
+            fit[i], res = get_fitted_residuals(R_inv_Q_trans[i],mod_mats[i],g,C[i],n)
             fit[i] -=prevsum
         else
             fit[i] = get_fitted(R_inv_Q_trans[i],mod_mats[i],g,C[i],n) - sum(fit)
         end
     end
-    f_terms .= (fit) ./(Gres)
+    f_terms .= (fit) ./(res)
     perms[:,j] .= f_terms
     shuffle!.(blockviews)
     
