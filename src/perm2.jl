@@ -166,7 +166,6 @@ function permute(G ::Hermitian, n , n_terms , mod_mats ,R_inv_Q_trans,n_perm , C
     for col in eachcol(block_mat)
         push!(blockviews,view(inds,Bool.(collect(col))))
     end
-    indscopy = copy(inds)
     perms = Array{Float64}(undef,n_terms,n_perm+1)
     fit = zeros(n_terms)
     f_terms = zeros(n_terms)
