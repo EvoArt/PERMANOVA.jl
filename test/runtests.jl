@@ -1,5 +1,5 @@
 
-using PerMANOVA, DataFrames,Distances, RCall, BenchmarkTools
+using PERMANOVA, DataFrames,Distances, RCall, BenchmarkTools
 using Test
 R"library(vegan)"
 
