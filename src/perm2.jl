@@ -87,7 +87,7 @@ function permanova(data,D, formula = @formula(1~1), n_perm = 999;blocks = false)
         if cc < n
             data = data[(1:n)[inds],:]
             D = D[inds,inds]
-            @warn "$(n-cc) data row(s) dropped due to missing vaues."
+            @warn "$(n-cc) data row(s) dropped due to missing values."
             n = cc
         end
     catch e
