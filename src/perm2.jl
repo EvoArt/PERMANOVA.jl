@@ -78,11 +78,26 @@ function unpack_formula(form)
 end
 
 function permanova(data,D, formula = @formula(1~1), n_perm = 999;blocks = false)
-    
+
     n = size(D)[1]
-    G = Hermitian(-0.5 * doube_center(D .^2))
-    fitted, residual = 0.0,0.0
     formulae,terms = unpack_formula(formula) #list of model formulae for analysis and names for coef table
+    try
+        inds = vec(sum(ismissing.(Array(data[!,terms])),dims = 2) .==0)
+        cc = sum(inds) # no. complete cases
+        if cc < n
+            data = data[(1:n)[inds],:]
+            D = D[inds,inds]
+            @warn "$(n-cc) data row(s) dropped due to missing vaues."
+            n = cc
+        end
+    catch e
+        @warn "Unable to check for missing values. Please make sure there are no missing values in relevant variables."
+    end
+
+    data = float.(data)
+
+    G = Hermitian(-0.5 * doube_center(float.(D) .^2))
+    fitted, residual = 0.0,0.0
     n_terms = length(terms) 
     mod_mats = Vector{Matrix}(undef,n_terms)
     R_inv_Q_trans = Vector{Matrix}(undef,n_terms)
