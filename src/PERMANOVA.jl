@@ -1,26 +1,32 @@
+"""
+    PERMANOVA
+
+Permutational multivariate analysis of variance on a dissimilarity matrix
+(Anderson 2001; McArdle & Anderson 2001), with the same statistics as
+`vegan::adonis2`.
+
+```julia
+permanova(df, D, @formula(1 ~ treatment + site))
+permanova(df, Y, BrayCurtis(), @formula(1 ~ treatment))
+pairwise_permanova(df, D, :treatment)
+```
+"""
 module PERMANOVA
 
-using Random, LinearAlgebra, Distances, StatsModels,Statistics,TexTables,LoopVectorization, NamedArrays
-include("perm2.jl")
-include("output.jl")
-if Base.VERSION >= v"1.4.2"
-    include("precompile.jl")
-    _precompile_()
-end
-export permanova, 
-    hydra,
-    permute, 
-    Euclidean,
-    SqEuclidean,
-    PeriodicEuclidean,
-    Cityblock,
-    TotalVariation,
-    Chebyshev,
-    Minkowski,
-    Jaccard,
-    BrayCurtis,
-    RogersTanimoto,
-    @formula
+using LinearAlgebra, Random, Statistics
+using Distances
+using StatsModels
+using Tables
+using Printf: @sprintf
 
-precompile(A_mul_B!,(Array{Float64},Array{Float64},Array{Float64}))
+export permanova, hydra, pairwise_permanova, PermanovaResult, PairwisePermanova, adjust_p, @formula
+# metrics re-exported since 0.1
+export Euclidean, SqEuclidean, PeriodicEuclidean, Cityblock, TotalVariation, Chebyshev,
+       Minkowski, Jaccard, BrayCurtis, RogersTanimoto
+
+include("design.jl")
+include("fit.jl")
+include("pairwise.jl")
+include("show.jl")
+
 end
