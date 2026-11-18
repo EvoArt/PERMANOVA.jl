@@ -3,3 +3,10 @@
 *.jl.mem
 /Manifest.toml
 /docs/build/
+
+# notes for/from coding assistants: never tracked
+CLAUDE.md
+**/CLAUDE.md
+HANDOVER*.md
+**/HANDOVER*.md
+/.claude/

@@ -67,8 +67,8 @@ end
         r1 = permanova(df, Y, BrayCurtis(), @formula(1 ~ a); permutations=99, rng=StableRNG(3))
         r2 = permanova(df, Y, BrayCurtis, @formula(1 ~ a), 99; rng=StableRNG(3))
         r3 = hydra(df, pairwise(BrayCurtis(), Y; dims=1), @formula(1 ~ a), 99; rng=StableRNG(3))
-        @test r1.F == r2.F == r3.F
-        @test r1.p == r2.p == r3.p
+        @test isequal(r1.F, r2.F) && isequal(r2.F, r3.F)
+        @test isequal(r1.p, r2.p) && isequal(r2.p, r3.p)
         @test DataFrame(r1).term == ["a", "Residual", "Total"]
     end
 
@@ -86,7 +86,7 @@ end
         P = reduce(vcat, (randperm(StableRNG(i), n)' for i in 1:50))
         p1 = permanova(df, D, @formula(1 ~ a); permutations=P)
         p2 = permanova(df, D, @formula(1 ~ a); permutations=P)
-        @test p1.p == p2.p && p1.permutations == 50
+        @test isequal(p1.p, p2.p) && p1.permutations == 50
         # with strata, every permutation keeps each observation in its block
         s = permanova(df, D, @formula(1 ~ a); strata=df.b, permutations=99, rng=StableRNG(5))
         @test 0 < s.p[1] <= 1

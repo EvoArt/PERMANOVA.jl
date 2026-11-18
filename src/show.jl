@@ -4,7 +4,7 @@ _sty(io, s, color; bold=false) = get(io, :color, false) ?
     string(bold ? "\e[1m" : "", "\e[38;5;$(color)m", s, "\e[0m") : string(s)
 _pfmt(p) = isnan(p) ? "" : p < 0.001 ? "<0.001" : @sprintf("%.3f", p)
 _stars(p) = isnan(p) ? "" : p < 0.001 ? "***" : p < 0.01 ? "**" : p < 0.05 ? "*" : p < 0.1 ? "." : ""
-_f(x, fmt) = isnan(x) ? "" : @sprintf(fmt, x)
+_f(x, fmt) = isnan(x) ? "" : Printf.format(Printf.Format(fmt), x)
 
 Base.show(io::IO, r::PermanovaResult) = print(io, "PermanovaResult(", join(r.terms[1:end-2], ", "), ")")
 

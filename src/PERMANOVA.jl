@@ -17,6 +17,7 @@ using LinearAlgebra, Random, Statistics
 using Distances
 using StatsModels
 using Tables
+import Printf
 using Printf: @sprintf
 
 export permanova, hydra, pairwise_permanova, PermanovaResult, PairwisePermanova, adjust_p, @formula
