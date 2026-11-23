@@ -8,6 +8,10 @@ concurrency:
   cancel-in-progress: true
 jobs:
   test:
+    permissions:
+      actions: write
+      contents: read
+      id-token: write
     name: Julia ${{ matrix.version }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -28,6 +32,12 @@ jobs:
       - uses: julia-actions/julia-runtest@v1
         env:
           JULIA_NUM_THREADS: 2
+      - uses: julia-actions/julia-processcoverage@v1
+      - uses: codecov/codecov-action@v5
+        with:
+          files: lcov.info
+          use_oidc: true
+          fail_ci_if_error: false
   vegan:
     name: Compare with vegan
     runs-on: ubuntu-latest

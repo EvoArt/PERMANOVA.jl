@@ -1,8 +1,8 @@
 # PERMANOVA
 
-[![Build Status](https://github.com/EvoArt/Hydra.jl/workflows/CI/badge.svg)](https://github.com/EvoArt/Hydra.jl/actions)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/EvoArt/Hydra.jl?svg=true)](https://ci.appveyor.com/project/EvoArt/Hydra-jl)
-[![Coverage](https://codecov.io/gh/EvoArt/Hydra.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/EvoArt/Hydra.jl)
+[![CI](https://github.com/EvoArt/PERMANOVA.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/EvoArt/PERMANOVA.jl/actions/workflows/CI.yml?query=branch%3Amaster)
+[![Coverage](https://codecov.io/gh/EvoArt/PERMANOVA.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/EvoArt/PERMANOVA.jl)
+[![Docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://EvoArt.github.io/PERMANOVA.jl/dev/)
 
 PERMANOVA implementation based on the work of [McArdle and Anderson](https://esajournals.onlinelibrary.wiley.com/doi/10.1890/0012-9658%282001%29082%5B0290%3AFMMTCD%5D2.0.CO%3B2). This package aims to provide similar functionality to the `adonis2` in the R package [`vegan`](https://cran.r-project.org/web/packages/vegan/index.html). Thus, implementation details are more similar to `adonis2` than to the original work by McArdle and Anderson. P-values are calculated via permuting of data (not residuals) and calculating sequential sums of squares. In keeping with names from mythology, we provide an alias to the `permanova` function :`hydra` the many headed Lernaean Hydra represents the multivariate response data we aim to tackle here. Though perhaps Heracles or Iolis (the eventual slayers of the Hydra) would be more apt.
 
