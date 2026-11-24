@@ -124,5 +124,26 @@ end
         @test occursin("Residual", s) && occursin("Pr(>F)", s)
         @test occursin("pair", sprint(show, MIME("text/plain"), pairwise_permanova(df, D, :b; permutations=9)))
         @test adjust_p([0.01, 0.04, 0.03, 0.2], :holm) ≈ [0.04, 0.09, 0.09, 0.2]
+        @test adjust_p([0.01, 0.04, 0.03, 0.2], :bh) ≈ [0.04, 0.16 / 3, 0.16 / 3, 0.2]
+        @test adjust_p([0.01, 0.04, 0.03, 0.2], :bonferroni) ≈ [0.04, 0.16, 0.12, 0.8]
+        @test adjust_p([0.01, 0.5], :none) == [0.01, 0.5]
+        @test adjust_p(Float64[]) == Float64[]
+        @test_throws ArgumentError adjust_p([0.01, 0.5], :fdr)
+        @test sprint(show, r) == "PermanovaResult(a, b)"
+        pwb = pairwise_permanova(df, D, :b; permutations=9)
+        @test sprint(show, pwb) == "PairwisePermanova(b, 1 pairs)"
+        @test_throws ArgumentError pairwise_permanova(df, D, :nothere)
+        @test_throws ArgumentError pairwise_permanova(DataFrame(a=fill("x", n)), D, :a)
+    end
+
+    @testset "pairwise: data + metric forms, Tables.jl" begin
+        D = pairwise(BrayCurtis(), Y; dims=1)
+        ref = pairwise_permanova(df, D, :a; permutations=0)
+        @test pairwise_permanova(df, Y, BrayCurtis(), :a; permutations=0).F ≈ ref.F
+        @test pairwise_permanova(df, Y, BrayCurtis, :a; permutations=0, adjust=:bh).F ≈ ref.F
+        @test PERMANOVA.Tables.columnaccess(typeof(ref))
+        r = permanova(df, D, @formula(1 ~ a); permutations=0)
+        @test PERMANOVA.Tables.columnaccess(typeof(r))
+        @test DataFrame(r).term == r.terms
     end
 end
